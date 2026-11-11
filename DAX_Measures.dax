@@ -1,0 +1,233 @@
+/* DAX measures. READABLE COPY of model.bim. */
+
+
+-- [ECN] Open ECNs the line must know about today: issued in the last 7 days, MP planned this or next week, or schedule moved / overdue.
+[ECN áp dụng hôm nay] =
+CALCULATE ( COUNTROWS ( 'ECN' ), 'ECN'[Scope] = "Áp dụng hôm nay" ) + 0
+
+
+-- [ECN] Open ECNs whose MP week is the current week.
+[ECN chạy lần đầu tuần này] =
+CALCULATE ( COUNTROWS ( 'ECN' ), 'ECN'[First Run] = "Yes" ) + 0
+
+
+-- [ECN] Open ECNs with a moved plan (history in Note) or an MP week already passed.
+[Cảnh báo dời lịch] =
+CALCULATE (
+    COUNTROWS ( 'ECN' ),
+    'ECN'[Schedule State] IN { "DỜI LỊCH", "QUÁ HẠN" }
+) + 0
+
+
+-- [ECN] All ECNs not yet Done or Cancelled.
+[ECN đang mở] =
+CALCULATE (
+    COUNTROWS ( 'ECN' ),
+    'ECN'[Status] IN { "Ongoing", "Chưa bắt đầu" }
+) + 0
+
+
+-- [ECN] Field-value conditional format for the schedule badge cell.
+[Badge Fill] =
+SELECTEDVALUE ( 'ECN'[Badge Color], "#94A3B8" )
+
+
+-- [ECN] Date of the last refresh in Vietnam time and its ISO week.
+[Today Label] =
+VAR D = CALCULATE ( MAX ( 'ECN'[As Of Date] ), ALL ( 'ECN' ) )
+VAR W = CALCULATE ( MAX ( 'ECN'[As Of Week] ), ALL ( 'ECN' ) )
+RETURN
+    FORMAT ( D, "dddd dd/MM/yyyy" ) & "   ·   W" & W
+
+
+-- [ECN] ECN count in the current filter.
+[Số ECN] =
+COUNTROWS ( 'ECN' )
+
+
+-- [ECN] Distinct FG codes of the open ECNs in the filter.
+[FG đang mở] =
+CALCULATE (
+    DISTINCTCOUNT ( 'ECN FG'[FG Code] ),
+    'ECN'[Status] IN { "Ongoing", "Chưa bắt đầu" },
+    'ECN FG'[FG Code] <> "—"
+)
+
+
+-- [ECN] ECNs whose ECN form is sent or received.
+[Giấy ECN đã gửi] =
+CALCULATE ( COUNTROWS ( 'ECN' ), 'ECN'[Giấy ECN] IN { "Đã gửi", "Đã nhận" } ) + 0
+
+
+-- [ECN] First 6 models of the ECNs in the filter.
+[Danh sách Model] =
+VAR m = VALUES ( 'ECN Models'[Model] )
+VAR n = COUNTROWS ( m )
+VAR t = TOPN ( 6, m, 'ECN Models'[Model], ASC )
+RETURN
+    IF (
+        n = 0,
+        "—",
+        CONCATENATEX ( t, 'ECN Models'[Model], ", ", 'ECN Models'[Model], ASC )
+            & IF ( n > 6, "  … +" & ( n - 6 ), "" )
+    )
+
+
+-- [ECN] Median days from date issued to date completed (Done ECNs with both dates).
+[Ngày xử lý (trung vị)] =
+MEDIAN ( 'ECN'[Ngày xử lý] )
+
+
+-- [ECN] ECN count, only for the 10 models with most ECNs (ties broken by name).
+[Top 10 Model] =
+VAR curN = [Số ECN]
+VAR cur = SELECTEDVALUE ( 'ECN Models'[Model] )
+VAR tbl = ADDCOLUMNS ( ALLSELECTED ( 'ECN Models'[Model] ), "@n", [Số ECN] )
+VAR rk =
+    COUNTROWS (
+        FILTER ( tbl, [@n] > curN || ( [@n] = curN && 'ECN Models'[Model] <= cur ) )
+    )
+RETURN
+    IF ( NOT ISBLANK ( curN ) && rk <= 10, curN )
+
+
+-- [ECN] ECN count, only for the 5 FG codes with most ECNs (ties broken by code).
+[Top 5 FG] =
+VAR curN = [Số ECN]
+VAR cur = SELECTEDVALUE ( 'ECN FG'[FG Code] )
+VAR tbl =
+    ADDCOLUMNS (
+        FILTER ( ALLSELECTED ( 'ECN FG'[FG Code] ), 'ECN FG'[FG Code] <> "—" ),
+        "@n", [Số ECN]
+    )
+VAR rk =
+    COUNTROWS (
+        FILTER ( tbl, [@n] > curN || ( [@n] = curN && 'ECN FG'[FG Code] <= cur ) )
+    )
+RETURN
+    IF ( cur <> "—" && NOT ISBLANK ( curN ) && rk <= 5, curN )
+
+
+-- [ECN] Header of the left list of the Log tab.
+[Tiêu đề tuần này] =
+VAR d = CALCULATE ( MAX ( 'ECN'[As Of Date] ), ALL ( 'ECN' ) )
+VAR n = CALCULATE ( COUNTROWS ( 'ECN' ), 'ECN'[Tuần so với nay] = "Tuần này" ) + 0
+RETURN
+    "TUẦN NÀY  ·  W" & FORMAT ( WEEKNUM ( d, 21 ), "00" ) & "  ·  " & n & " ECN"
+
+
+-- [ECN] Header of the right list of the Log tab.
+[Tiêu đề tuần sau] =
+VAR d = CALCULATE ( MAX ( 'ECN'[As Of Date] ), ALL ( 'ECN' ) )
+VAR n = CALCULATE ( COUNTROWS ( 'ECN' ), 'ECN'[Tuần so với nay] = "Tuần sau" ) + 0
+RETURN
+    "TUẦN SAU  ·  W" & FORMAT ( WEEKNUM ( d + 7, 21 ), "00" ) & "  ·  " & n & " ECN"
+
+
+-- [ECN] ECNs issued in the week.
+[ECN ban hành] =
+CALCULATE (
+    COUNTROWS ( 'ECN' ),
+    TREATAS ( VALUES ( 'ECN Calendar'[Week Start] ), 'ECN'[Tuần ban hành] )
+) + 0
+
+
+-- [ECN] ECNs completed in the week.
+[ECN hoàn tất] =
+CALCULATE (
+    COUNTROWS ( 'ECN' ),
+    TREATAS ( VALUES ( 'ECN Calendar'[Week Start] ), 'ECN'[Tuần hoàn tất] )
+) + 0
+
+
+-- [ECN] Median days to complete, by week of completion.
+[Ngày xử lý theo tuần] =
+CALCULATE (
+    MEDIAN ( 'ECN'[Ngày xử lý] ),
+    TREATAS ( VALUES ( 'ECN Calendar'[Week Start] ), 'ECN'[Tuần hoàn tất] )
+)
+
+
+-- [ECN] Cell colour for EC Instruction = Immediately.
+[Instr Fill] =
+IF ( SELECTEDVALUE ( 'ECN'[EC Instruction] ) = "Immediately", "#FBD5D1", "#FFFFFF" )
+
+
+-- [ECN Notes] Parsed note lines.
+[Dòng ghi chú] =
+COUNTROWS ( 'ECN Notes' )
+
+
+-- [ECN Notes] Note lines no rule recognised - rewrite them following the entry rules.
+[Dòng chưa nhận dạng] =
+CALCULATE ( COUNTROWS ( 'ECN Notes' ), 'ECN Notes'[Phân loại] = "Chưa nhận dạng" ) + 0
+
+
+-- [ECN Notes] Note lines that move the schedule.
+[Dòng dời lịch] =
+CALCULATE ( COUNTROWS ( 'ECN Notes' ), 'ECN Notes'[Loại sự kiện] = "Dời lịch" ) + 0
+
+
+-- [ECN Notes] ECNs with at least one schedule move.
+[ECN có dời lịch] =
+CALCULATE (
+    DISTINCTCOUNT ( 'ECN Notes'[ECN Number] ),
+    'ECN Notes'[Loại sự kiện] = "Dời lịch"
+) + 0
+
+
+-- [ECN Notes] Cell colour for schedule-move lines.
+[Event Fill] =
+IF ( SELECTEDVALUE ( 'ECN Notes'[Loại sự kiện] ) = "Dời lịch", "#FFE3A3", "#FFFFFF" )
+
+
+-- [ECN Notes] Share of note lines the parser understood.
+[Dòng đã nhận dạng %] =
+DIVIDE ( [Dòng ghi chú] - [Dòng chưa nhận dạng], [Dòng ghi chú] )
+
+
+-- [ECN Weeks] Old-item quantity used in the week. The same old item in several ECN lines is counted once.
+[SL nhu cầu] =
+SUMX (
+    SUMMARIZE ( 'ECN Weeks', 'ECN Weeks'[Old item], 'ECN Weeks'[Week Start] ),
+    CALCULATE ( MAX ( 'ECN Weeks'[Demand] ) )
+)
+
+
+-- [ECN Weeks] Part of the usage still covered by old-item stock.
+[SL dùng mã cũ] =
+SUMX (
+    SUMMARIZE ( 'ECN Weeks', 'ECN Weeks'[Old item], 'ECN Weeks'[Week Start] ),
+    CALCULATE ( MAX ( 'ECN Weeks'[Old Used] ) )
+)
+
+
+-- [ECN Weeks] Part of the usage beyond old-item stock: runs on the new item (or is short if there is none).
+[SL mã mới / thiếu] =
+SUMX (
+    SUMMARIZE ( 'ECN Weeks', 'ECN Weeks'[Old item], 'ECN Weeks'[Week Start] ),
+    CALCULATE ( MAX ( 'ECN Weeks'[New Used] ) )
+)
+
+
+-- [ECN Weeks] ECNs whose old item is used in the selected week(s).
+[ECN có nhu cầu] =
+CALCULATE ( DISTINCTCOUNT ( 'ECN Weeks'[ECN Number] ), 'ECN Weeks'[Demand] > 0 ) + 0
+
+
+-- [ECN Weeks] Blank when 0 so cards only show lines that run.
+[SL tuần (pcs)] =
+VAR x = [SL nhu cầu]
+RETURN IF ( x > 0, x )
+
+
+-- [ECN Weeks] Old-item balance at the end of the week; negative = short / running the new item.
+[Tồn mã cũ cuối tuần] =
+IF (
+    [SL nhu cầu] > 0,
+    SUMX (
+        SUMMARIZE ( 'ECN Weeks', 'ECN Weeks'[Old item], 'ECN Weeks'[Week Start] ),
+        CALCULATE ( MAX ( 'ECN Weeks'[Balance] ) )
+    )
+)
+

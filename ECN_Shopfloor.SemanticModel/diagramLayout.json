@@ -1,0 +1,100 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 336.58025056586905,
+            "y": 303.71802765762357
+          },
+          "nodeIndex": "ECN",
+          "nodeLineageTag": "2854132d-275f-4fc8-b132-88877a01d416",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 650.11051866572529,
+            "y": 538.38620570203216
+          },
+          "nodeIndex": "ECN FG",
+          "nodeLineageTag": "a068778d-ced6-49ab-8326-cd8526b31bc1",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 363.05011968141321,
+            "y": 657.43837271577331
+          },
+          "nodeIndex": "ECN Lines",
+          "nodeLineageTag": "ce635ba7-1571-41d5-bcb9-e128051dcf2c",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 116.00129519174908,
+            "y": 122.88770652293579
+          },
+          "nodeIndex": "ECN Models",
+          "nodeLineageTag": "9b7c1d7f-ebee-4222-8a1c-03cfeed3b63e",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 560.0221035351218,
+            "y": -50
+          },
+          "nodeIndex": "ECN Notes",
+          "nodeLineageTag": "db714577-f34f-41e9-80f2-b0d9fca4d43c",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 508.55654734797338
+          },
+          "nodeIndex": "ECN Weeks",
+          "nodeLineageTag": "575d2656-1ea6-4a61-bb84-34b9cb4ca40a",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

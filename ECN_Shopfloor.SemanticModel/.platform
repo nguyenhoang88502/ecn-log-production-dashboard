@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "ECN_Shopfloor"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "a0369eaf-d63a-4c07-9e0f-5bd110d3e47d"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "ECN_Assembly"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e73c9d49-b9c6-4a6b-b777-a7d575724d7e"
+  }
+}
